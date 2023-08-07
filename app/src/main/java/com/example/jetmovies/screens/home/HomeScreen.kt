@@ -33,7 +33,10 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import com.example.jetmovies.model.Movie
+import com.example.jetmovies.model.getMovies
 import com.example.jetmovies.navigation.MovieScreens
+import com.example.jetmovies.widgets.MovieRow
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,55 +58,18 @@ fun HomeScreen(navController: NavController) {
 @Composable
 fun MainContent(
     navController: NavController,
-    moviesList: List<String> = listOf(
-    "hello",
-    "bello",
-    "dello"
-)) {
+    moviesList: List<Movie> = getMovies()
+) {
     Column {
         LazyColumn(
             modifier = Modifier.fillMaxSize()
         ) {
-            items(items = moviesList) {
-                MovieRow(movie = it) {
-                    navController.navigate(route = MovieScreens.DetailsScreen.name)
+            items(items = moviesList) { it ->
+                MovieRow(movie = it) { movie ->
+                    navController.navigate(route = MovieScreens.DetailsScreen.name+"/$movie")
                 }
             }
         }
     }
 
-}
-
-@Composable
-fun MovieRow(movie: String, onItemClick: (String)->Unit = {}) {
-    Card(
-        modifier = Modifier
-            .padding(12.dp)
-            .fillMaxWidth()
-            .height(120.dp)
-            .clickable {
-                onItemClick(movie)
-            },
-        shape = RoundedCornerShape(corner = CornerSize(15.dp)),
-        elevation = CardDefaults.cardElevation(5.dp)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(10.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(15.dp)
-        ) {
-            Surface(
-                modifier = Modifier.size(100.dp),
-                shape = RectangleShape,
-                shadowElevation = 10.dp,
-            ) {
-                Icon(imageVector = Icons.Default.AccountBox,
-                    contentDescription = "Image For Movie")
-            }
-            Text(text = movie,
-                style = MaterialTheme.typography.titleLarge)
-        }
-    }
 }
