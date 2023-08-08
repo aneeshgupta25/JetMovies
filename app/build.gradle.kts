@@ -52,6 +52,7 @@ android {
 dependencies {
 
     val navVersion = "2.6.0"
+    val coilVersion = "2.4.0"
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
@@ -70,4 +71,6 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     //navigation
     implementation("androidx.navigation:navigation-compose:$navVersion")
+    //adding image from URL
+    implementation("io.coil-kt:coil-compose:$coilVersion")
 }
