@@ -52,10 +52,9 @@ import com.example.jetmovies.model.getMovies
 @Preview
 @Composable
 fun MovieRow(movie: Movie = getMovies()[0],
+             expanded: Boolean = false,
+             onExpandIconClick: ()->Unit = {},
              onItemClick: (String)->Unit = {}) {
-    var expanded by remember {
-        mutableStateOf(false)
-    }
     Card(
         modifier = Modifier
             .padding(12.dp)
@@ -78,8 +77,6 @@ fun MovieRow(movie: Movie = getMovies()[0],
                 shape = CircleShape,
                 shadowElevation = 10.dp,
             ) {
-//                Icon(imageVector = Icons.Default.AccountBox,
-//                    contentDescription = "Image For Movie")
                 Image(painter = rememberImagePainter(data = movie.images[0],
                     builder = {
                         crossfade(true)
@@ -108,10 +105,6 @@ fun MovieRow(movie: Movie = getMovies()[0],
                         },
                             modifier = Modifier.padding(5.dp))
                         Divider(modifier = Modifier.padding(top = 5.dp, bottom = 5.dp))
-//                        Text(buildAnnotatedString {
-//                            withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.DarkGray)) {append("Director: ")}
-//                            withStyle(style = SpanStyle(fontSize = 14.sp, fontWeight = FontWeight.Light)) {append(movie.director)}
-//                        })
                         Text(buildAnnotatedString {
                             withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.DarkGray)) {append("Actors: ")}
                             withStyle(style = SpanStyle(fontSize = 14.sp, fontWeight = FontWeight.Light)) {append(movie.actors)}
@@ -125,7 +118,7 @@ fun MovieRow(movie: Movie = getMovies()[0],
 
                 Icon(imageVector = if(expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown, contentDescription = "KeyBoard Arrow",
                     modifier = Modifier.clickable {
-                        expanded = !expanded
+                        onExpandIconClick()
                     })
             }
         }

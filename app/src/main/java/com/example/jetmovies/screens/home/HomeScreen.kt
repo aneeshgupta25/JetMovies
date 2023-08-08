@@ -71,7 +71,11 @@ fun MainContent(
             modifier = Modifier.fillMaxSize()
         ) {
             items(items = moviesList) { it ->
-                MovieRow(movie = it) { movie ->
+                MovieRow(movie = it,
+                    expanded = expanded[moviesList.indexOf(it)],
+                    onExpandIconClick = {
+                        expanded[moviesList.indexOf(it)] = !expanded[moviesList.indexOf(it)]
+                }) { movie ->
                     navController.navigate(route = MovieScreens.DetailsScreen.name+"/$movie")
                 }
             }
