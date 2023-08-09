@@ -21,7 +21,8 @@ fun MovieNavigation() {
         composable(route = MovieScreens.DetailsScreen.name+"/{movie}",
             arguments = listOf(navArgument(name = "movie"){type = NavType.StringType})
         ) { backStackEntry ->
-            DetailsScreen(navController = navController, backStackEntry.arguments?.getString("movie"))
+//            DetailsScreen(navController = navController, backStackEntry.arguments?.getString("movie"))
+            DetailsScreen()
         }
     }
 }

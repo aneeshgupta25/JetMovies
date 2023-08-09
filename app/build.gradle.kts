@@ -53,6 +53,7 @@ dependencies {
 
     val navVersion = "2.6.0"
     val coilVersion = "2.4.0"
+    val constraintLayoutVersion = "1.0.1"
 
     implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.1")
@@ -73,4 +74,8 @@ dependencies {
     implementation("androidx.navigation:navigation-compose:$navVersion")
     //adding image from URL
     implementation("io.coil-kt:coil-compose:$coilVersion")
+    //constraint layout
+    implementation("androidx.constraintlayout:constraintlayout-compose:$constraintLayoutVersion")
+    //material icons
+    implementation("androidx.compose.material:material-icons-extended:1.4.3")
 }
