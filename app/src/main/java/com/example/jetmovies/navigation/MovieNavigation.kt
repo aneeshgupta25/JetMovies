@@ -15,7 +15,8 @@ fun MovieNavigation() {
     NavHost(navController = navController,
         startDestination = MovieScreens.HomeScreen.name) {
         composable(route = MovieScreens.HomeScreen.name) {
-            HomeScreen(navController = navController)
+//            HomeScreen(navController = navController)
+            HomeScreen()
         }
         composable(route = MovieScreens.DetailsScreen.name+"/{movie}",
             arguments = listOf(navArgument(name = "movie"){type = NavType.StringType})
