@@ -73,6 +73,7 @@ import com.example.jetmovies.model.getMovies
 import com.example.jetmovies.model.getUpComingMovies
 import com.example.jetmovies.ui.theme.MyDarkGreen
 import com.example.jetmovies.ui.theme.MyDarkGrey
+import com.example.jetmovies.utils.ScreenConfig
 import com.example.jetmovies.widgets.MovieMetadata
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -135,9 +136,8 @@ fun DetailsScreen(navController: NavController,
 
 @Composable
 fun CoverAndMovieImage(movie: Movie?) {
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = ScreenConfig.getHeight()
+    val screenWidth = ScreenConfig.getWidth()
 
     ConstraintLayout {
         val (coverImageCard, profileImageCard, rating, title, movieMetadata) = createRefs()
@@ -173,7 +173,9 @@ fun CoverAndMovieImage(movie: Movie?) {
         ) {
             Image(painter = rememberImagePainter(data = movie?.profilePoster), contentDescription = "profile poster",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxWidth().fillMaxHeight()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .fillMaxHeight()
             )
         }
 
@@ -290,7 +292,10 @@ fun MovieDataDetails(movie: Movie?,
                                 painter = rememberImagePainter(data = it.imageUrl),
                                 contentDescription = "Actor Image",
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.size(120.dp).fillMaxWidth().fillMaxHeight()
+                                modifier = Modifier
+                                    .size(120.dp)
+                                    .fillMaxWidth()
+                                    .fillMaxHeight()
                             )
                         }
                         Text(

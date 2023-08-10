@@ -44,6 +44,7 @@ import coil.compose.rememberImagePainter
 import coil.transform.CircleCropTransformation
 import com.example.jetmovies.model.Movie
 import com.example.jetmovies.model.getMovies
+import com.example.jetmovies.utils.ScreenConfig
 
 @Preview
 @Composable
@@ -51,9 +52,8 @@ fun MovieRow(movie: Movie = getMovies()[0],
              expanded: Boolean = false,
              onExpandIconClick: ()->Unit = {},
              onItemClick: (String, Int)->Unit = { id: String, category: Int -> }) {
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = ScreenConfig.getHeight()
+    val screenWidth = ScreenConfig.getWidth()
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -72,14 +72,17 @@ fun MovieRow(movie: Movie = getMovies()[0],
             horizontalArrangement = Arrangement.spacedBy(15.dp)
         ) {
             Card(
-                modifier = Modifier.height(screenHeight / 5)
+                modifier = Modifier
+                    .height(screenHeight / 5)
                     .width(screenWidth / 4),
             ) {
                 Image(painter = rememberImagePainter(data = movie.profilePoster,
                     builder = {
                         crossfade(true)
                     }),
-                    modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxHeight()
+                        .fillMaxWidth(),
                     contentScale = ContentScale.Crop,
                     contentDescription = "image for movie")
             }

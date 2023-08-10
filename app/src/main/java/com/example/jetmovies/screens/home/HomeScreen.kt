@@ -57,6 +57,7 @@ import com.example.jetmovies.model.getMovies
 import com.example.jetmovies.model.getUpComingMovies
 import com.example.jetmovies.navigation.MovieScreens
 import com.example.jetmovies.ui.theme.MyDarkGrey
+import com.example.jetmovies.utils.ScreenConfig
 import com.example.jetmovies.widgets.MovieRow
 import com.example.jetmovies.widgets.SearchBox
 
@@ -207,9 +208,8 @@ fun DisplayMoviesSections(
     upcomingMoviesList: List<Movie> = getUpComingMovies(),
     navController: NavController
 ) {
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val screenWidth = configuration.screenWidthDp.dp
+    val screenHeight = ScreenConfig.getHeight()
+    val screenWidth = ScreenConfig.getWidth()
 
     val tabs = listOf("Now Playing", "Upcoming")
     var tabIndex = remember { mutableStateOf(0) }
