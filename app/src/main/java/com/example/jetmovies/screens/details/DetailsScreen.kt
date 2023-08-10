@@ -64,22 +64,23 @@ import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
 import com.example.jetmovies.R
+import com.example.jetmovies.model.Movie
 import com.example.jetmovies.model.getActors
+import com.example.jetmovies.model.getMovies
 import com.example.jetmovies.ui.theme.MyDarkGreen
 import com.example.jetmovies.ui.theme.MyDarkGrey
 import com.example.jetmovies.widgets.MovieMetadata
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
-fun DetailsScreen(movieData: String? = "Aneesh") {
-//fun DetailsScreen(navController: NavController, movieData: String?) {
-
-
+fun DetailsScreen(navController: NavController, movieId: String?) {
 
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val screenWidth = configuration.screenWidthDp.dp
+    val movieList = getMovies().filter { it.id == movieId }
+    val movie = movieList[0]
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -98,7 +99,7 @@ fun DetailsScreen(movieData: String? = "Aneesh") {
                         modifier = Modifier
                             .padding(start = 10.dp)
                             .clickable {
-
+                                navController.popBackStack()
                             },
                         tint = Color.White
                     )
@@ -111,7 +112,7 @@ fun DetailsScreen(movieData: String? = "Aneesh") {
         Box(modifier = Modifier
             .padding(it)) {
             Column {
-                CoverAndMovieImage()
+                CoverAndMovieImage(movie)
                 MovieDataDetails()
             }
         }
@@ -120,7 +121,7 @@ fun DetailsScreen(movieData: String? = "Aneesh") {
 }
 
 @Composable
-fun CoverAndMovieImage() {
+fun CoverAndMovieImage(movie: Movie?) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val screenWidth = configuration.screenWidthDp.dp

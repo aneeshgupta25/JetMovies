@@ -44,7 +44,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.jetmovies.navigation.MovieNavigation
-import com.example.jetmovies.screens.details.DetailsScreen
 import com.example.jetmovies.ui.theme.JetMoviesTheme
 
 class MainActivity : ComponentActivity() {
@@ -52,7 +51,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         setContent {
             MyApp {
-                DetailsScreen()
+                MovieNavigation()
             }
         }
     }

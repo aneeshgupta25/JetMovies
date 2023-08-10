@@ -1,5 +1,6 @@
 package com.example.jetmovies.screens.home
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -51,6 +52,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,6 +62,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
@@ -72,11 +75,10 @@ import com.example.jetmovies.ui.theme.MyDarkGrey
 import com.example.jetmovies.widgets.MovieRow
 import com.example.jetmovies.widgets.SearchBox
 
-@Preview
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-//fun HomeScreen(navController: NavController) {
-fun HomeScreen() {
+fun HomeScreen(navController: NavController) {
+//fun HomeScreen() {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -94,27 +96,19 @@ fun HomeScreen() {
             .padding(it)
             .fillMaxWidth()
             .fillMaxHeight()) {
-//            MainContent(navController = navController)
-            MainContent()
+            MainContent(navController = navController)
+//            MainContent()
         }
     }
 }
 
 @Composable
 fun MainContent(
-//    navController: NavController,
+    navController: NavController,
     moviesList: List<Movie> = getMovies()
 ) {
-
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val screenWidth = configuration.screenWidthDp.dp
-
-    val tabs = listOf<String>("Now Playing", "Upcoming")
-    var tabIndex = remember {
-        mutableStateOf(0)
-    }
-
+    var searchState by remember { mutableStateOf(false) }
+    var searchResult by remember { mutableStateOf(listOf<Movie?>()) }
     Column (
         modifier = Modifier
             .fillMaxWidth()
@@ -122,110 +116,156 @@ fun MainContent(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SearchBox()
-        Spacer(modifier = Modifier.height(20.dp))
-        Text(text = "Top Hits..",
-            modifier = Modifier.fillMaxWidth(),
-            color = Color.White,
-            fontWeight = FontWeight.Bold,
-            style = MaterialTheme.typography.titleMedium
-        )
-        Spacer(modifier = Modifier.height(15.dp))
-        Card(
-            shape = RoundedCornerShape(corner = CornerSize(15.dp)),
-            colors = CardDefaults.cardColors(Color.Transparent)
-        ) {
-            LazyRow(
-                horizontalArrangement = Arrangement.spacedBy(15.dp),
-            ) {
-                items(items = moviesList) {
-                    Card(
-                        modifier = Modifier
-                            .height(screenHeight / 4)
-                            .width(screenWidth / 3),
-                        shape = RoundedCornerShape(corner = CornerSize(15.dp)),
-                        elevation = CardDefaults.cardElevation(5.dp),
-                        border = BorderStroke(width = 2.dp, color = Color.White)
-                    ) {
-                        Image(painter = rememberImagePainter(data = it.poster) ,
-                            contentDescription = "image",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(),
-                            contentScale = ContentScale.FillHeight)
-                    }
-                }
-            }
+        SearchBox {
+            Log.d("Aneesh3", it.toString())
+            searchResult= it
+            searchState = it.isNotEmpty()
         }
-        Spacer(modifier = Modifier.padding(top = 20.dp))
+        Spacer(modifier = Modifier.height(20.dp))
+        if(searchState) DisplaySearchResults(searchResult, navController)
+        else DisplayMoviesSections()
+    }
+}
+
+@Composable
+fun DisplaySearchResults(searchResult: List<Movie?> = listOf(null),
+                         navController: NavController) {
+    if(searchResult[0] == null) {
         Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            TabRow(selectedTabIndex = tabIndex.value,
-                modifier = Modifier.padding(horizontal = 15.dp),
-                containerColor = MyDarkGrey,
-                divider = {},
-                indicator = {
-                    TabRowDefaults.Indicator(
-                        Modifier.tabIndicatorOffset(it[tabIndex.value]),
-                        color = Color.White
-                    )
-                }) {
-                tabs.forEachIndexed { index, title ->
-                    Tab(
-                        selected = tabIndex.value == index,
-                        onClick = {
-                            tabIndex.value = index
-                        },
-                        selectedContentColor = Color.White,
-                        unselectedContentColor = Color.Gray) {
-                        Text(text = title,
-                            modifier = Modifier.padding(bottom = 10.dp),
-                            style = MaterialTheme.typography.titleMedium)
-                    }
-                }
-            }
-            LazyVerticalGrid(columns = GridCells.Adaptive(screenWidth/4),
-                modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(items = moviesList) {
-                    Card(
-                        modifier = Modifier
-                            .height(screenHeight / 4),
-                        shape = RoundedCornerShape(corner = CornerSize(15.dp)),
-                        elevation = CardDefaults.cardElevation(5.dp),
-                        border = BorderStroke(width = 2.dp, color = Color.White)
-                    ) {
-                        Image(painter = rememberImagePainter(data = it.poster) ,
-                            contentDescription = "image",
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .fillMaxHeight(),
-                            contentScale = ContentScale.FillHeight)
+            Image(painter = painterResource(id = R.drawable.search),
+                contentDescription = "Movie Not Found",
+                modifier = Modifier.height(150.dp)
+            )
+            Spacer(modifier = Modifier.height(10.dp))
+            Text(text = "Sorry!!",
+                fontWeight = FontWeight.Bold,
+                style = MaterialTheme.typography.displaySmall,
+                color = Color.White)
+            Spacer(modifier = Modifier.height(5.dp))
+            Text(text = "We were unable to fetch this movie.. :(",
+                modifier = Modifier.width(150.dp),
+                textAlign = TextAlign.Center,
+                style = MaterialTheme.typography.bodyLarge,
+                color = Color.White)
+        }
+    } else {
+        val expanded = remember {
+            mutableStateListOf(false)
+        }
+        LazyColumn {
+            items(items = searchResult) { movie ->
+                if (movie != null) {
+                    MovieRow(movie = movie,
+                        expanded = expanded[searchResult.indexOf(movie)],
+                        onExpandIconClick = {
+                            expanded[searchResult.indexOf(movie)] = !expanded[searchResult.indexOf(movie)]
+                        }) {movieId ->
+                        navController.navigate(route = MovieScreens.DetailsScreen.name+"/$movieId")
                     }
                 }
             }
         }
     }
+}
 
-//    Column {
-//        val expanded = remember (moviesList) {
-//            moviesList.map { false }.toMutableStateList()
-//        }
-//        LazyColumn(
-//            modifier = Modifier.fillMaxSize()
-//        ) {
-//            items(items = moviesList) { it ->
-//                MovieRow(movie = it,
-//                    expanded = expanded[moviesList.indexOf(it)],
-//                    onExpandIconClick = {
-//                        expanded[moviesList.indexOf(it)] = !expanded[moviesList.indexOf(it)]
-//                }) { movie ->
-//                    navController.navigate(route = MovieScreens.DetailsScreen.name+"/$movie")
-//                }
-//            }
-//        }
-//    }
+@Composable
+fun DisplayMoviesSections(
+    moviesList: List<Movie> = getMovies()
+) {
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
 
+    val tabs = listOf<String>("Now Playing", "Upcoming")
+    var tabIndex = remember { mutableStateOf(0) }
+
+    Text(text = "Top Hits..",
+        modifier = Modifier.fillMaxWidth(),
+        color = Color.White,
+        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.titleMedium
+    )
+    Spacer(modifier = Modifier.height(15.dp))
+    Card(
+        shape = RoundedCornerShape(corner = CornerSize(15.dp)),
+        colors = CardDefaults.cardColors(Color.Transparent)
+    ) {
+        LazyRow(
+            horizontalArrangement = Arrangement.spacedBy(15.dp),
+        ) {
+            items(items = moviesList) {
+                Card(
+                    modifier = Modifier
+                        .height(screenHeight / 4)
+                        .width(screenWidth / 3),
+                    shape = RoundedCornerShape(corner = CornerSize(15.dp)),
+                    elevation = CardDefaults.cardElevation(5.dp),
+                    border = BorderStroke(width = 2.dp, color = Color.White)
+                ) {
+                    Image(painter = rememberImagePainter(data = it.poster) ,
+                        contentDescription = "image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        contentScale = ContentScale.FillHeight)
+                }
+            }
+        }
+    }
+    Spacer(modifier = Modifier.padding(top = 20.dp))
+    Column(
+    ) {
+        TabRow(selectedTabIndex = tabIndex.value,
+            modifier = Modifier.padding(horizontal = 15.dp),
+            containerColor = MyDarkGrey,
+            divider = {},
+            indicator = {
+                TabRowDefaults.Indicator(
+                    Modifier.tabIndicatorOffset(it[tabIndex.value]),
+                    color = Color.White
+                )
+            }) {
+            tabs.forEachIndexed { index, title ->
+                Tab(
+                    selected = tabIndex.value == index,
+                    onClick = {
+                        tabIndex.value = index
+                    },
+                    selectedContentColor = Color.White,
+                    unselectedContentColor = Color.Gray) {
+                    Text(text = title,
+                        modifier = Modifier.padding(bottom = 10.dp),
+                        style = MaterialTheme.typography.titleMedium)
+                }
+            }
+        }
+        LazyVerticalGrid(columns = GridCells.Adaptive(screenWidth/4),
+            modifier = Modifier.padding(top = 10.dp, bottom = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            items(items = moviesList) {
+                Card(
+                    modifier = Modifier
+                        .height(screenHeight / 4),
+                    shape = RoundedCornerShape(corner = CornerSize(15.dp)),
+                    elevation = CardDefaults.cardElevation(5.dp),
+                    border = BorderStroke(width = 2.dp, color = Color.White)
+                ) {
+                    Image(painter = rememberImagePainter(data = it.poster) ,
+                        contentDescription = "image",
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .fillMaxHeight(),
+                        contentScale = ContentScale.FillHeight)
+                }
+            }
+        }
+    }
 }
