@@ -160,29 +160,27 @@ fun MainContent(
         Spacer(modifier = Modifier.padding(top = 20.dp))
         Column(
         ) {
-            Row {
-                TabRow(selectedTabIndex = tabIndex.value,
-                    modifier = Modifier.padding(horizontal = 15.dp),
-                    containerColor = MyDarkGrey,
-                    divider = {},
-                    indicator = {
-                        TabRowDefaults.Indicator(
-                            Modifier.tabIndicatorOffset(it[tabIndex.value]),
-                            color = Color.White
-                        )
-                    }) {
-                    tabs.forEachIndexed { index, title ->
-                        Tab(
-                            selected = tabIndex.value == index,
-                            onClick = {
-                                tabIndex.value = index
-                            },
-                            selectedContentColor = Color.White,
-                            unselectedContentColor = Color.Gray) {
-                            Text(text = title,
-                                modifier = Modifier.padding(bottom = 10.dp),
-                                style = MaterialTheme.typography.titleMedium)
-                        }
+            TabRow(selectedTabIndex = tabIndex.value,
+                modifier = Modifier.padding(horizontal = 15.dp),
+                containerColor = MyDarkGrey,
+                divider = {},
+                indicator = {
+                    TabRowDefaults.Indicator(
+                        Modifier.tabIndicatorOffset(it[tabIndex.value]),
+                        color = Color.White
+                    )
+                }) {
+                tabs.forEachIndexed { index, title ->
+                    Tab(
+                        selected = tabIndex.value == index,
+                        onClick = {
+                            tabIndex.value = index
+                        },
+                        selectedContentColor = Color.White,
+                        unselectedContentColor = Color.Gray) {
+                        Text(text = title,
+                            modifier = Modifier.padding(bottom = 10.dp),
+                            style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }
