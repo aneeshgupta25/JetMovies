@@ -1,5 +1,6 @@
 package com.example.jetmovies.screens.home
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -37,6 +38,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -61,6 +63,10 @@ import com.example.jetmovies.widgets.SearchBox
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
+    var isSearchValidState by remember { mutableStateOf(false) }
+    var searchResultState by remember { mutableStateOf(listOf<Movie?>()) }
+    var searchTextState by remember { mutableStateOf("") }
+    var expanded = remember(searchResultState) { searchResultState.map { false }.toMutableStateList() }
     Scaffold(
         topBar = {
             TopAppBar(
@@ -78,7 +84,32 @@ fun HomeScreen(navController: NavController) {
             .padding(it)
             .fillMaxWidth()
             .fillMaxHeight()) {
-            MainContent(navController = navController)
+            MainContent(navController = navController,
+                isSearchValidState = isSearchValidState,
+                searchTextState = searchTextState,
+                updateSearchTextState = {
+                  searchTextState = it
+                  if(searchTextState.isEmpty()) {
+                      isSearchValidState = false
+                  }
+                },
+                expanded = expanded,
+                updateExpanded = { index, expand ->
+                    expanded[index] = expand
+                },
+                searchResultState = searchResultState,
+            ) { newSearchStatus, newSearchResultList ->
+                isSearchValidState = newSearchStatus
+                searchResultState = newSearchResultList
+            }
+            BackHandler(
+                enabled = isSearchValidState
+            ) {
+                if(isSearchValidState) {
+                    searchTextState = ""
+                    isSearchValidState = false
+                }
+            }
         }
     }
 }
@@ -86,10 +117,14 @@ fun HomeScreen(navController: NavController) {
 @Composable
 fun MainContent(
     navController: NavController,
-    moviesList: List<Movie> = getMovies()
+    isSearchValidState: Boolean,
+    searchTextState: String,
+    updateSearchTextState: (String)->Unit,
+    expanded: List<Boolean>,
+    updateExpanded: (Int, Boolean)->Unit,
+    searchResultState: List<Movie?>,
+    updateSearchResultState: (Boolean, List<Movie?>)->Unit,
 ) {
-    var searchState by remember { mutableStateOf(false) }
-    var searchResult by remember { mutableStateOf(listOf<Movie?>()) }
     Column (
         modifier = Modifier
             .fillMaxWidth()
@@ -97,19 +132,31 @@ fun MainContent(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        SearchBox {
-            searchResult= it
-            searchState = it.isNotEmpty()
+        SearchBox(
+            searchText = searchTextState,
+            onSearchTextValueChange = {
+                updateSearchTextState.invoke(it)
+            }
+        ) {newSearchStatus, newSearchResultList ->
+            updateSearchResultState.invoke(newSearchStatus, newSearchResultList)
         }
         Spacer(modifier = Modifier.height(20.dp))
-        if(searchState) DisplaySearchResults(searchResult, navController)
+        if(isSearchValidState) DisplaySearchResults(searchResult = searchResultState,
+            navController = navController,
+            expanded = expanded,
+            updateExpanded = { index, expand ->
+                updateExpanded.invoke(index, expand)
+            }
+            )
         else DisplayMoviesSections(navController = navController)
     }
 }
 
 @Composable
 fun DisplaySearchResults(searchResult: List<Movie?>,
-                         navController: NavController) {
+                         navController: NavController,
+                         expanded: List<Boolean>,
+                         updateExpanded: (Int, Boolean)->Unit) {
     if(searchResult[0] == null) {
         Column(
             modifier = Modifier
@@ -135,16 +182,16 @@ fun DisplaySearchResults(searchResult: List<Movie?>,
                 color = Color.White)
         }
     } else {
-        val expanded = remember {
-            searchResult.map { false }.toMutableStateList()
-        }
-        LazyColumn {
+        LazyColumn(
+            verticalArrangement = Arrangement.spacedBy(5.dp)
+        ) {
             items(items = searchResult) { movie ->
                 if (movie != null) {
                     MovieRow(movie = movie,
                         expanded = expanded[searchResult.indexOf(movie)],
                         onExpandIconClick = {
-                            expanded[searchResult.indexOf(movie)] = !expanded[searchResult.indexOf(movie)]
+                            val idx = searchResult.indexOf(movie)
+                            updateExpanded.invoke(idx, !expanded[idx])
                         }) { movieId, movieCategory ->
                         navController.navigate(MovieScreens.DetailsScreen.name + "/$movieId/$movieCategory")
                     }
@@ -196,10 +243,10 @@ fun DisplayMoviesSections(
                 ) {
                     Image(painter = rememberImagePainter(data = it.profilePoster) ,
                         contentDescription = "image",
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .fillMaxHeight(),
-                        contentScale = ContentScale.FillHeight)
+                            .fillMaxHeight())
                 }
             }
         }
@@ -250,10 +297,10 @@ fun DisplayMoviesSections(
                 ) {
                     Image(painter = rememberImagePainter(data = it.profilePoster) ,
                         contentDescription = "image",
+                        contentScale = ContentScale.Crop,
                         modifier = Modifier
-                            .fillMaxHeight()
-                            .fillMaxWidth(),
-                        contentScale = ContentScale.FillHeight)
+                            .fillMaxWidth()
+                            .fillMaxHeight())
                 }
             }
         }

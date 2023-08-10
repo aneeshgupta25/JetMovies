@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
@@ -30,6 +31,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
@@ -48,9 +51,11 @@ fun MovieRow(movie: Movie = getMovies()[0],
              expanded: Boolean = false,
              onExpandIconClick: ()->Unit = {},
              onItemClick: (String, Int)->Unit = { id: String, category: Int -> }) {
+    val configuration = LocalConfiguration.current
+    val screenHeight = configuration.screenHeightDp.dp
+    val screenWidth = configuration.screenWidthDp.dp
     Card(
         modifier = Modifier
-            .padding(12.dp)
             .fillMaxWidth()
             .clickable {
                 onItemClick(movie.id, movie.category)
@@ -66,15 +71,16 @@ fun MovieRow(movie: Movie = getMovies()[0],
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(15.dp)
         ) {
-            Surface(
-                modifier = Modifier.size(100.dp),
-                shape = CircleShape
+            Card(
+                modifier = Modifier.height(screenHeight / 5)
+                    .width(screenWidth / 4),
             ) {
                 Image(painter = rememberImagePainter(data = movie.profilePoster,
                     builder = {
                         crossfade(true)
-                        transformations(CircleCropTransformation())
                     }),
+                    modifier = Modifier.fillMaxHeight().fillMaxWidth(),
+                    contentScale = ContentScale.Crop,
                     contentDescription = "image for movie")
             }
             Column() {

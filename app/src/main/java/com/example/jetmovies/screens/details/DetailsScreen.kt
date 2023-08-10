@@ -81,6 +81,9 @@ fun DetailsScreen(navController: NavController,
                   movieId: String?,
                   movieCategory: Int?) {
 
+    var tabIndex by remember { mutableStateOf(0) }
+    val tabs = listOf("About Movie", "Cast")
+
     var movie: Movie = if(movieCategory == 0) {
         getMovies().filter { it.id == movieId }[0]
     } else {
@@ -119,7 +122,12 @@ fun DetailsScreen(navController: NavController,
             .padding(it)) {
             Column {
                 CoverAndMovieImage(movie)
-                MovieDataDetails(movie)
+                MovieDataDetails(movie,
+                    tabs = tabs,
+                    tabIndex = tabIndex,
+                ) { index ->
+                    tabIndex = index
+                }
             }
         }
     }
@@ -165,7 +173,8 @@ fun CoverAndMovieImage(movie: Movie?) {
         ) {
             Image(painter = rememberImagePainter(data = movie?.profilePoster), contentDescription = "profile poster",
                 contentScale = ContentScale.Crop,
-                modifier = Modifier.fillMaxHeight())
+                modifier = Modifier.fillMaxWidth().fillMaxHeight()
+            )
         }
 
         Text(text = movie!!.title,
@@ -222,11 +231,12 @@ fun CoverAndMovieImage(movie: Movie?) {
 }
 
 @Composable
-fun MovieDataDetails(movie: Movie?) {
-    var tabIndex by remember {
-        mutableStateOf(0)
-    }
-    val tabs = listOf("About Movie", "Cast")
+fun MovieDataDetails(movie: Movie?,
+                     tabs: List<String>,
+                     tabIndex: Int,
+                     updateIndex: (Int)->Unit
+                     ) {
+
     MovieMetaDataColumn(movie)
     TabRow(selectedTabIndex = tabIndex,
         modifier = Modifier.padding(horizontal = 25.dp),
@@ -244,7 +254,7 @@ fun MovieDataDetails(movie: Movie?) {
             Tab(
                 selected = tabIndex == index,
                 onClick = {
-                    tabIndex = index
+                    updateIndex(index)
                 },
                 selectedContentColor = Color.White,
                 unselectedContentColor = Color.Gray
@@ -279,9 +289,8 @@ fun MovieDataDetails(movie: Movie?) {
                             Image(
                                 painter = rememberImagePainter(data = it.imageUrl),
                                 contentDescription = "Actor Image",
-                                contentScale = ContentScale.FillBounds,
-                                modifier = Modifier
-                                    .size(120.dp)
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier.size(120.dp).fillMaxWidth().fillMaxHeight()
                             )
                         }
                         Text(

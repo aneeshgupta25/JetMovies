@@ -228,7 +228,7 @@ fun getMovies(): List<Movie> {
                 ),
                 Actor(
                     name = "Sunny Kaushal",
-                    imageUrl = "https://encrypted-tbn3.gstatic.com/licensed-image?q=tbn:ANd9GcTDWJuJpuREMPU0koAk8QWxneS79WHmXS-atL9NzBOb5TxMEN-Wr9-HKY8xoL0U1I-_T5ZBMLXLAZX4rpE"
+                    imageUrl = "https://m.media-amazon.com/images/M/MV5BMDI4OTEwNGItZjg5Ni00OWZlLTkwZmQtNzg4YTE3YzcxNWQ1XkEyXkFqcGdeQXVyNDAzNDk0MTQ@._V1_FMjpg_UX1000_.jpg"
                 ),
                 Actor(
                     name = "Sharad Kelkar",
@@ -374,7 +374,7 @@ fun getUpComingMovies(): List<Movie> {
                 ),
                 Actor(
                     name = "Pankaj Tripathi",
-                    imageUrl = "https://encrypted-tbn0.gstatic.com/licensed-image?q=tbn:ANd9GcS53QrjJSWLWnZpDcpvB7MbtsdG0PjmFDVdy-_TQqYA_E3wyo9jOHEhBZdvQGfZe8IjFsHbu2P3YbqfIuA"
+                    imageUrl = "https://m.media-amazon.com/images/M/MV5BNjdlYjllOGMtYzU1OC00ODZjLWEzOGEtMGViOTYyYjU3YmJiXkEyXkFqcGdeQXVyMTExNDQ2MTI@._V1_.jpg"
                 )
             )
         ),
