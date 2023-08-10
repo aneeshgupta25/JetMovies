@@ -30,9 +30,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.jetmovies.model.Movie
 import com.example.jetmovies.model.getMovies
+import com.example.jetmovies.model.getUpComingMovies
 import com.example.jetmovies.ui.theme.MyLightGrey
 
 val movies = getMovies()
+val upcomingMovies = getUpComingMovies()
 
 @Preview
 @OptIn(ExperimentalMaterial3Api::class)
@@ -84,9 +86,16 @@ fun SearchBox(updateSearchStatus: (searchList: List<Movie?>)->Unit = {}) {
 fun updateSearchList(userInput: String?): List<Movie?> {
     if(userInput == "") return listOf()
 
-     var list =  movies.filter {
+     var currMovieList =  movies.filter {
         it.title.toLowerCase().startsWith(userInput!!.toLowerCase())
     }
+    var upcomingMovieList = upcomingMovies.filter {
+        it.title.toLowerCase().startsWith(userInput!!.toLowerCase())
+    }
+    var list = mutableListOf<Movie>()
+    currMovieList.forEach { list.add(it) }
+    upcomingMovieList.forEach { list.add(it) }
+    
     if(list.isNotEmpty()) return list
     return listOf(null)
 }

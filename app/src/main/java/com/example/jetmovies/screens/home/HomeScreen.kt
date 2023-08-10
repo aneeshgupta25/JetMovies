@@ -1,23 +1,16 @@
 package com.example.jetmovies.screens.home
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
@@ -25,31 +18,22 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.AccountBox
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Tab
 import androidx.compose.material3.TabRow
 import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -57,19 +41,18 @@ import androidx.compose.runtime.toMutableStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import coil.compose.rememberImagePainter
 import com.example.jetmovies.R
 import com.example.jetmovies.model.Movie
 import com.example.jetmovies.model.getMovies
+import com.example.jetmovies.model.getUpComingMovies
 import com.example.jetmovies.navigation.MovieScreens
 import com.example.jetmovies.ui.theme.MyDarkGrey
 import com.example.jetmovies.widgets.MovieRow
@@ -78,7 +61,6 @@ import com.example.jetmovies.widgets.SearchBox
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(navController: NavController) {
-//fun HomeScreen() {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -97,7 +79,6 @@ fun HomeScreen(navController: NavController) {
             .fillMaxWidth()
             .fillMaxHeight()) {
             MainContent(navController = navController)
-//            MainContent()
         }
     }
 }
@@ -117,18 +98,17 @@ fun MainContent(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         SearchBox {
-            Log.d("Aneesh3", it.toString())
             searchResult= it
             searchState = it.isNotEmpty()
         }
         Spacer(modifier = Modifier.height(20.dp))
         if(searchState) DisplaySearchResults(searchResult, navController)
-        else DisplayMoviesSections()
+        else DisplayMoviesSections(navController = navController)
     }
 }
 
 @Composable
-fun DisplaySearchResults(searchResult: List<Movie?> = listOf(null),
+fun DisplaySearchResults(searchResult: List<Movie?>,
                          navController: NavController) {
     if(searchResult[0] == null) {
         Column(
@@ -156,7 +136,7 @@ fun DisplaySearchResults(searchResult: List<Movie?> = listOf(null),
         }
     } else {
         val expanded = remember {
-            mutableStateListOf(false)
+            searchResult.map { false }.toMutableStateList()
         }
         LazyColumn {
             items(items = searchResult) { movie ->
@@ -165,8 +145,8 @@ fun DisplaySearchResults(searchResult: List<Movie?> = listOf(null),
                         expanded = expanded[searchResult.indexOf(movie)],
                         onExpandIconClick = {
                             expanded[searchResult.indexOf(movie)] = !expanded[searchResult.indexOf(movie)]
-                        }) {movieId ->
-                        navController.navigate(route = MovieScreens.DetailsScreen.name+"/$movieId")
+                        }) { movieId, movieCategory ->
+                        navController.navigate(MovieScreens.DetailsScreen.name + "/$movieId/$movieCategory")
                     }
                 }
             }
@@ -176,14 +156,17 @@ fun DisplaySearchResults(searchResult: List<Movie?> = listOf(null),
 
 @Composable
 fun DisplayMoviesSections(
-    moviesList: List<Movie> = getMovies()
+    currentMoviesList: List<Movie> = getMovies(),
+    upcomingMoviesList: List<Movie> = getUpComingMovies(),
+    navController: NavController
 ) {
     val configuration = LocalConfiguration.current
     val screenHeight = configuration.screenHeightDp.dp
     val screenWidth = configuration.screenWidthDp.dp
 
-    val tabs = listOf<String>("Now Playing", "Upcoming")
+    val tabs = listOf("Now Playing", "Upcoming")
     var tabIndex = remember { mutableStateOf(0) }
+    var movies = remember { mutableStateOf(0) }
 
     Text(text = "Top Hits..",
         modifier = Modifier.fillMaxWidth(),
@@ -199,16 +182,19 @@ fun DisplayMoviesSections(
         LazyRow(
             horizontalArrangement = Arrangement.spacedBy(15.dp),
         ) {
-            items(items = moviesList) {
+            items(items = currentMoviesList) {
                 Card(
                     modifier = Modifier
                         .height(screenHeight / 4)
-                        .width(screenWidth / 3),
+                        .width(screenWidth / 3)
+                        .clickable {
+                            navController.navigate(MovieScreens.DetailsScreen.name + "/${it.id}/${it.category}")
+                        },
                     shape = RoundedCornerShape(corner = CornerSize(15.dp)),
                     elevation = CardDefaults.cardElevation(5.dp),
                     border = BorderStroke(width = 2.dp, color = Color.White)
                 ) {
-                    Image(painter = rememberImagePainter(data = it.poster) ,
+                    Image(painter = rememberImagePainter(data = it.profilePoster) ,
                         contentDescription = "image",
                         modifier = Modifier
                             .fillMaxWidth()
@@ -236,6 +222,7 @@ fun DisplayMoviesSections(
                     selected = tabIndex.value == index,
                     onClick = {
                         tabIndex.value = index
+                        movies.value = index
                     },
                     selectedContentColor = Color.White,
                     unselectedContentColor = Color.Gray) {
@@ -250,19 +237,22 @@ fun DisplayMoviesSections(
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            items(items = moviesList) {
+            items(items = if(movies.value == 0) currentMoviesList else upcomingMoviesList) {
                 Card(
                     modifier = Modifier
-                        .height(screenHeight / 4),
+                        .height(screenHeight / 5)
+                        .clickable {
+                            navController.navigate(MovieScreens.DetailsScreen.name + "/${it.id}/${it.category}")
+                        },
                     shape = RoundedCornerShape(corner = CornerSize(15.dp)),
                     elevation = CardDefaults.cardElevation(5.dp),
                     border = BorderStroke(width = 2.dp, color = Color.White)
                 ) {
-                    Image(painter = rememberImagePainter(data = it.poster) ,
+                    Image(painter = rememberImagePainter(data = it.profilePoster) ,
                         contentDescription = "image",
                         modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight(),
+                            .fillMaxHeight()
+                            .fillMaxWidth(),
                         contentScale = ContentScale.FillHeight)
                 }
             }

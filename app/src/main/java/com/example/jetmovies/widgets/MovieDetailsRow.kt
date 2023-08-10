@@ -11,12 +11,14 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.CornerSize
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Divider
@@ -45,14 +47,15 @@ import com.example.jetmovies.model.getMovies
 fun MovieRow(movie: Movie = getMovies()[0],
              expanded: Boolean = false,
              onExpandIconClick: ()->Unit = {},
-             onItemClick: (String)->Unit = {}) {
+             onItemClick: (String, Int)->Unit = { id: String, category: Int -> }) {
     Card(
         modifier = Modifier
             .padding(12.dp)
             .fillMaxWidth()
             .clickable {
-                onItemClick(movie.id)
+                onItemClick(movie.id, movie.category)
             },
+        colors = CardDefaults.cardColors(Color(0xFF3A3F47)),
         shape = RoundedCornerShape(corner = CornerSize(15.dp)),
         elevation = CardDefaults.cardElevation(5.dp)
     ) {
@@ -65,10 +68,9 @@ fun MovieRow(movie: Movie = getMovies()[0],
         ) {
             Surface(
                 modifier = Modifier.size(100.dp),
-                shape = CircleShape,
-                shadowElevation = 10.dp,
+                shape = CircleShape
             ) {
-                Image(painter = rememberImagePainter(data = movie.images[0],
+                Image(painter = rememberImagePainter(data = movie.profilePoster,
                     builder = {
                         crossfade(true)
                         transformations(CircleCropTransformation())
@@ -77,32 +79,44 @@ fun MovieRow(movie: Movie = getMovies()[0],
             }
             Column() {
                 Text(text = movie.title,
+                    color = Color.White,
                     style = MaterialTheme.typography.titleLarge)
                 Text(text = "Director: ${movie.director}",
+                    color = Color.White,
                     style = MaterialTheme.typography.bodyMedium)
-                Text(text = "Released: ${movie.year}",
-                    style = MaterialTheme.typography.bodyMedium)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier.padding(top = 5.dp)
+                ){
+                    Icon(imageVector = Icons.Outlined.CalendarToday, contentDescription = "Date",
+                        tint = Color.White)
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(text = "${movie.date}",
+                        color = Color.White,
+                        style = MaterialTheme.typography.bodyMedium)
+                }
                 Spacer(modifier = Modifier.height(5.dp))
 
                 AnimatedVisibility(visible = expanded) {
                     Column {
                         Text( buildAnnotatedString {
-                            withStyle(style = SpanStyle(color = Color.DarkGray, fontSize = 14.sp)) {
+                            withStyle(style = SpanStyle(color = Color.White, fontSize = 14.sp)) {
                                 append("Plot: ")
                             }
-                            withStyle(style = SpanStyle(fontWeight = FontWeight.Light)) {
+                            withStyle(style = SpanStyle(color = Color.White, fontWeight = FontWeight.Light)) {
                                 append(movie.plot)
                             }
                         },
                             modifier = Modifier.padding(5.dp))
                         Divider(modifier = Modifier.padding(top = 5.dp, bottom = 5.dp))
                         Text(buildAnnotatedString {
-                            withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.DarkGray)) {append("Actors: ")}
-                            withStyle(style = SpanStyle(fontSize = 14.sp, fontWeight = FontWeight.Light)) {append(movie.actors)}
+                            withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.White)) {append("Actors: ")}
+                            withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Light)) {append(movie.actors)}
                         })
                         Text(buildAnnotatedString {
-                            withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.DarkGray)) {append("Rating: ")}
-                            withStyle(style = SpanStyle(fontSize = 14.sp, fontWeight = FontWeight.Light)) {append(movie.rating)}
+                            withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.White)) {append("Rating: ")}
+                            withStyle(style = SpanStyle(fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Light)) {append(movie.rating)}
                         })
                     }
                 }
@@ -110,7 +124,8 @@ fun MovieRow(movie: Movie = getMovies()[0],
                 Icon(imageVector = if(expanded) Icons.Filled.KeyboardArrowUp else Icons.Filled.KeyboardArrowDown, contentDescription = "KeyBoard Arrow",
                     modifier = Modifier.clickable {
                         onExpandIconClick()
-                    })
+                    },
+                    tint = Color.White)
             }
         }
     }

@@ -3,6 +3,7 @@ package com.example.jetmovies.screens.details
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.scrollable
 import androidx.compose.foundation.layout.Arrangement
@@ -15,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -51,6 +53,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
@@ -63,23 +66,26 @@ import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
 import androidx.navigation.NavController
+import coil.compose.rememberImagePainter
 import com.example.jetmovies.R
 import com.example.jetmovies.model.Movie
-import com.example.jetmovies.model.getActors
 import com.example.jetmovies.model.getMovies
+import com.example.jetmovies.model.getUpComingMovies
 import com.example.jetmovies.ui.theme.MyDarkGreen
 import com.example.jetmovies.ui.theme.MyDarkGrey
 import com.example.jetmovies.widgets.MovieMetadata
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DetailsScreen(navController: NavController, movieId: String?) {
+fun DetailsScreen(navController: NavController,
+                  movieId: String?,
+                  movieCategory: Int?) {
 
-    val configuration = LocalConfiguration.current
-    val screenHeight = configuration.screenHeightDp.dp
-    val screenWidth = configuration.screenWidthDp.dp
-    val movieList = getMovies().filter { it.id == movieId }
-    val movie = movieList[0]
+    var movie: Movie = if(movieCategory == 0) {
+        getMovies().filter { it.id == movieId }[0]
+    } else {
+        getUpComingMovies().filter { it.id == movieId }[0]
+    }
 
     Scaffold(
         topBar = {
@@ -113,11 +119,10 @@ fun DetailsScreen(navController: NavController, movieId: String?) {
             .padding(it)) {
             Column {
                 CoverAndMovieImage(movie)
-                MovieDataDetails()
+                MovieDataDetails(movie)
             }
         }
     }
-    //navController.popBackStack() -> to go back to previous screen
 }
 
 @Composable
@@ -139,7 +144,7 @@ fun CoverAndMovieImage(movie: Movie?) {
             shape = RoundedCornerShape(topStart = 0.dp, topEnd = 0.dp, bottomStart = 18.dp, bottomEnd = 18.dp)
         ) {
             Image(
-                painter = painterResource(id = R.drawable.demo2), contentDescription = "Image",
+                painter = rememberImagePainter(data = movie?.coverPoster), contentDescription = "cover poster",
                 modifier = Modifier
                     .height(screenHeight / 4)
                     .fillMaxWidth(),
@@ -158,11 +163,12 @@ fun CoverAndMovieImage(movie: Movie?) {
             },
             border = BorderStroke(width = 2.dp, color = Color.White)
         ) {
-            Image(painter = painterResource(id = R.drawable.demo), contentDescription = "",
-                contentScale = ContentScale.FillBounds)
+            Image(painter = rememberImagePainter(data = movie?.profilePoster), contentDescription = "profile poster",
+                contentScale = ContentScale.Crop,
+                modifier = Modifier.fillMaxHeight())
         }
 
-        Text(text = "Spiderman No Way Home",
+        Text(text = movie!!.title,
             modifier = Modifier.constrainAs(title) {
                 top.linkTo(coverImageCard.bottom, margin = 15.dp)
                 start.linkTo(profileImageCard.end, margin = 10.dp)
@@ -198,7 +204,7 @@ fun CoverAndMovieImage(movie: Movie?) {
                 Icon(imageVector = Icons.Filled.Star, contentDescription = "Rating",
                     tint = MyDarkGreen)
                 Spacer(modifier = Modifier.width(5.dp))
-                Text(text = "9.5",
+                Text(text = movie.rating,
                     fontWeight = FontWeight.Bold,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MyDarkGreen)
@@ -211,39 +217,17 @@ fun CoverAndMovieImage(movie: Movie?) {
                 end.linkTo(parent.end)
                 bottom.linkTo(parent.bottom)
             }
-        ) {
-
-        }
+        )
     }
 }
 
 @Composable
-fun MovieDataDetails() {
+fun MovieDataDetails(movie: Movie?) {
     var tabIndex by remember {
-        mutableStateOf(1)
+        mutableStateOf(0)
     }
     val tabs = listOf("About Movie", "Cast")
-    Row(
-        horizontalArrangement = Arrangement.SpaceEvenly,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(top = 10.dp, bottom = 10.dp)
-            .height(30.dp)
-    ) {
-        MovieMetadata(icon = Icons.Outlined.CalendarToday, data = "2021")
-        Divider(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(1.dp)
-        )
-        MovieMetadata(icon = Icons.Outlined.WatchLater, data = "148 minutes")
-        Divider(
-            modifier = Modifier
-                .fillMaxHeight()
-                .width(1.dp)
-        )
-        MovieMetadata(icon = Icons.Outlined.LocalActivity, data = "Action")
-    }
+    MovieMetaDataColumn(movie)
     TabRow(selectedTabIndex = tabIndex,
         modifier = Modifier.padding(horizontal = 25.dp),
         containerColor = MyDarkGrey,
@@ -274,7 +258,7 @@ fun MovieDataDetails() {
     }
     Box(modifier = Modifier.padding(vertical = 10.dp, horizontal = 25.dp)) {
         if(tabIndex == 0) {
-            Text(text = "Hello World",
+            Text(text = movie!!.plot,
                 modifier = Modifier.verticalScroll(rememberScrollState()),
                 style = MaterialTheme.typography.labelLarge,
                 color = Color.White)
@@ -284,7 +268,7 @@ fun MovieDataDetails() {
                 verticalArrangement = Arrangement.spacedBy(15.dp),
                 horizontalArrangement = Arrangement.spacedBy(10.dp)
             ) {
-                items(items = getActors()) {
+                items(items = movie!!.actorProfiles) {
                     Column(
                         verticalArrangement = Arrangement.Center,
                         horizontalAlignment = Alignment.CenterHorizontally
@@ -293,12 +277,11 @@ fun MovieDataDetails() {
                             shape = CircleShape
                         ) {
                             Image(
-                                painter = painterResource(id = R.drawable.demo),
+                                painter = rememberImagePainter(data = it.imageUrl),
                                 contentDescription = "Actor Image",
                                 contentScale = ContentScale.FillBounds,
                                 modifier = Modifier
-                                    .height(120.dp)
-                                    .width(120.dp),
+                                    .size(120.dp)
                             )
                         }
                         Text(
@@ -314,5 +297,34 @@ fun MovieDataDetails() {
                 }
             }
         }
+    }
+}
+
+//@Preview
+@Composable
+fun MovieMetaDataColumn(movie: Movie?) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = Modifier.padding(top = 10.dp)
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(30.dp)
+        ) {
+            MovieMetadata(icon = Icons.Outlined.CalendarToday, data = movie!!.date,
+                modifier = Modifier.weight(1f))
+            Divider(
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .width(1.dp)
+            )
+            MovieMetadata(icon = Icons.Outlined.WatchLater, data = "${movie.duration} minutes",
+                modifier = Modifier.weight(1f))
+        }
+        MovieMetadata(icon = Icons.Outlined.LocalActivity, data = movie!!.genre,
+            modifier = Modifier.fillMaxWidth())
     }
 }

@@ -2,7 +2,10 @@ package com.example.jetmovies.widgets
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarToday
 import androidx.compose.material3.Card
@@ -21,20 +24,24 @@ import com.example.jetmovies.ui.theme.MyDarkGrey
 @Composable
 fun MovieMetadata(
     icon: ImageVector,
-    data: String
+    data: String,
+    modifier: Modifier = Modifier
 ) {
     Card(
+        modifier = modifier,
         colors = CardDefaults.cardColors(MyDarkGrey)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalArrangement = Arrangement.Center,
             modifier = Modifier
                 .padding(5.dp)
+                .fillMaxWidth()
         ) {
             Icon(imageVector = icon, contentDescription = "",
                 tint = Color(0xFF92929D)
             )
+            Spacer(modifier = Modifier.width(2.dp))
             Text(data, color = Color(0xFF92929D),
                 style = MaterialTheme.typography.bodyLarge
             )
